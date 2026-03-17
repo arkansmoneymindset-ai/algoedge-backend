@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AlgoEdge — Admin Dashboard</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:#F4F7FE;color:#0D1A35;font-size:14px;}
+/* LOGIN */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#06091A;}
+.login-box{background:#0D1530;border:1px solid #1A2545;border-radius:12px;padding:40px;width:360px;}
+.login-box h2{color:#fff;margin-bottom:6px;font-size:1.2rem;}
+.login-box p{color:#5C738F;font-size:0.85rem;margin-bottom:24px;}
+.login-box input{width:100%;background:#06091A;border:1px solid #1A2545;border-radius:7px;padding:11px 14px;color:#fff;font-size:0.9rem;outline:none;margin-bottom:14px;}
+.login-box input:focus{border-color:#2563EB;}
+.login-box button{width:100%;background:#2563EB;color:#fff;border:none;padding:12px;border-radius:7px;font-size:0.9rem;font-weight:700;cursor:pointer;}
+.login-box button:hover{background:#1A4ED0;}
+/* LAYOUT */
+.app{display:none;}
+.sidebar{position:fixed;top:0;left:0;width:220px;height:100vh;background:#06091A;border-right:1px solid #1A2545;padding:20px 0;}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:0 20px 20px;border-bottom:1px solid #1A2545;margin-bottom:10px;}
+.logo-mark{width:30px;height:30px;background:#1A3A8F;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.7rem;font-weight:700;}
+.sidebar-logo span{color:#fff;font-weight:700;font-size:1rem;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:#5C738F;cursor:pointer;font-size:0.87rem;font-weight:500;transition:all .15s;border-left:2px solid transparent;}
+.nav-item:hover{color:#E8EEF8;background:rgba(255,255,255,.03);}
+.nav-item.active{color:#60A5FA;border-left-color:#2563EB;background:rgba(37,99,235,.08);}
+.main{margin-left:220px;padding:28px;}
+/* TOP BAR */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
+.topbar h1{font-size:1.25rem;font-weight:700;}
+.topbar-right{display:flex;gap:10px;align-items:center;}
+.badge-live{background:#D1FAE5;color:#065F46;font-size:0.72rem;font-weight:700;padding:4px 10px;border-radius:100px;}
+.logout-btn{background:transparent;border:1px solid #D4DCF0;color:#5C738F;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:0.83rem;transition:all .15s;}
+.logout-btn:hover{border-color:#2563EB;color:#2563EB;}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{background:#fff;border:1px solid #D4DCF0;border-radius:10px;padding:20px;}
+.stat-label{font-size:0.72rem;font-weight:700;color:#8098B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.stat-val{font-size:1.7rem;font-weight:700;color:#0D1A35;line-height:1;}
+.stat-val.green{color:#16A34A;}
+.stat-val.blue{color:#2563EB;}
+.stat-sub{font-size:0.78rem;color:#8098B8;margin-top:4px;}
+/* TABLE */
+.card{background:#fff;border:1px solid #D4DCF0;border-radius:10px;overflow:hidden;}
+.card-header{padding:16px 20px;border-bottom:1px solid #D4DCF0;display:flex;justify-content:space-between;align-items:center;}
+.card-header h3{font-size:0.95rem;font-weight:700;}
+.tab-pills{display:flex;gap:6px;}
+.pill{padding:5px 14px;border-radius:100px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid #D4DCF0;color:#8098B8;background:transparent;transition:all .15s;}
+.pill.on{background:#2563EB;color:#fff;border-color:#2563EB;}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 16px;text-align:left;font-size:0.72rem;font-weight:700;color:#8098B8;text-transform:uppercase;letter-spacing:.06em;background:#F4F7FE;border-bottom:1px solid #D4DCF0;}
+td{padding:12px 16px;border-bottom:1px solid #F0F4FA;font-size:0.84rem;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#FAFBFF;}
+.status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:700;}
+.s-completed{background:#D1FAE5;color:#065F46;}
+.s-pending{background:#FEF9C3;color:#713F12;}
+.s-failed{background:#FEE2E2;color:#7F1D1D;}
+.s-new{background:#DBEAFE;color:#1E3A8A;}
+.s-read{background:#F3F4F6;color:#374151;}
+.s-active{background:#D1FAE5;color:#065F46;}
+.s-revoked{background:#FEE2E2;color:#7F1D1D;}
+.mono{font-family:'Courier New',monospace;font-size:0.8rem;background:#F4F7FE;padding:3px 7px;border-radius:4px;}
+.action-btn{background:transparent;border:1px solid #D4DCF0;color:#5C738F;padding:4px 12px;border-radius:5px;cursor:pointer;font-size:0.78rem;transition:all .15s;}
+.action-btn:hover{border-color:#EF4444;color:#EF4444;}
+/* SECTIONS */
+.section{display:none;}
+.section.on{display:block;}
+.empty{text-align:center;padding:40px;color:#8098B8;}
+.refresh-btn{background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600;transition:all .15s;}
+.refresh-btn:hover{background:#DBEAFE;}
+.pagination{display:flex;gap:8px;align-items:center;padding:14px 20px;border-top:1px solid #D4DCF0;font-size:0.82rem;color:#8098B8;}
+.pg-btn{background:transparent;border:1px solid #D4DCF0;color:#5C738F;padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8rem;}
+.pg-btn:hover{border-color:#2563EB;color:#2563EB;}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h2>AlgoEdge Admin</h2>
+    <p>Enter your admin password to continue</p>
+    <input type="password" id="pwInput" placeholder="Admin password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button onclick="doLogin()">Login →</button>
+    <p id="loginErr" style="color:#EF4444;font-size:.82rem;margin-top:10px;display:none;">Incorrect password.</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="app" id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">AE</div>
+      <span>AlgoEdge</span>
+    </div>
+    <div class="nav-item active" onclick="showSection('dashboard',this)">📊 &nbsp;Dashboard</div>
+    <div class="nav-item" onclick="showSection('orders',this)">🛒 &nbsp;Orders</div>
+    <div class="nav-item" onclick="showSection('contacts',this)">📬 &nbsp;Contacts</div>
+    <div class="nav-item" onclick="showSection('licenses',this)">🔑 &nbsp;Licenses</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="topbar-right">
+        <span class="badge-live">● LIVE</span>
+        <button class="refresh-btn" onclick="loadCurrent()">↻ Refresh</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD SECTION -->
+    <div class="section on" id="sec-dashboard">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-val green" id="s-rev">—</div><div class="stat-sub">Completed orders</div></div>
+        <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val blue" id="s-orders">—</div><div class="stat-sub" id="s-pending">— pending</div></div>
+        <div class="stat-card"><div class="stat-label">Active Licenses</div><div class="stat-val" id="s-lic">—</div><div class="stat-sub">Issued & active</div></div>
+        <div class="stat-card"><div class="stat-label">New Enquiries</div><div class="stat-val" id="s-contacts">—</div><div class="stat-sub">Unread messages</div></div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <div class="card-header"><h3>Recent Orders</h3></div>
+        <div id="recentOrders"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ORDERS SECTION -->
+    <div class="section" id="sec-orders">
+      <div class="card">
+        <div class="card-header">
+          <h3>All Orders</h3>
+          <div class="tab-pills">
+            <button class="pill on" onclick="filterOrders('',this)">All</button>
+            <button class="pill" onclick="filterOrders('completed',this)">Completed</button>
+            <button class="pill" onclick="filterOrders('pending',this)">Pending</button>
+          </div>
+        </div>
+        <div id="ordersTable"><div class="empty">Loading...</div></div>
+        <div class="pagination" id="ordersPag"></div>
+      </div>
+    </div>
+
+    <!-- CONTACTS SECTION -->
+    <div class="section" id="sec-contacts">
+      <div class="card">
+        <div class="card-header">
+          <h3>Contact Enquiries</h3>
+          <div class="tab-pills">
+            <button class="pill on" onclick="filterContacts('',this)">All</button>
+            <button class="pill" onclick="filterContacts('new',this)">New</button>
+            <button class="pill" onclick="filterContacts('read',this)">Read</button>
+          </div>
+        </div>
+        <div id="contactsTable"><div class="empty">Loading...</div></div>
+        <div class="pagination" id="contactsPag"></div>
+      </div>
+    </div>
+
+    <!-- LICENSES SECTION -->
+    <div class="section" id="sec-licenses">
+      <div class="card">
+        <div class="card-header"><h3>Issued Licenses</h3></div>
+        <div id="licensesTable"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000/api/admin'; // change to your deployed URL
+let adminSecret = '';
+let orderStatus = '';
+let orderPage   = 1;
+let contactStatus = '';
+let contactPage   = 1;
+
+// ── LOGIN
+function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  if (!pw) return;
+  adminSecret = pw;
+  fetch(`${API}/stats`, { headers: { 'x-admin-secret': pw } })
+    .then(r => {
+      if (r.status === 401) { document.getElementById('loginErr').style.display = 'block'; return; }
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      loadDashboard();
+    })
+    .catch(() => { document.getElementById('loginErr').style.display = 'block'; });
+}
+
+function logout() {
+  adminSecret = '';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+}
+
+// ── NAVIGATION
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('on');
+  el.classList.add('active');
+  const titles = { dashboard: 'Dashboard', orders: 'Orders', contacts: 'Contact Enquiries', licenses: 'Licenses' };
+  document.getElementById('pageTitle').textContent = titles[id];
+  loadSection(id);
+}
+
+function loadCurrent() {
+  const active = document.querySelector('.section.on').id.replace('sec-', '');
+  loadSection(active);
+}
+
+function loadSection(id) {
+  if (id === 'dashboard') loadDashboard();
+  if (id === 'orders')    loadOrders();
+  if (id === 'contacts')  loadContacts();
+  if (id === 'licenses')  loadLicenses();
+}
+
+// ── API HELPER
+async function api(path) {
+  const r = await fetch(API + path, { headers: { 'x-admin-secret': adminSecret } });
+  return r.json();
+}
+
+// ── DASHBOARD
+async function loadDashboard() {
+  const stats = await api('/stats');
+  document.getElementById('s-rev').textContent     = '₹' + (stats.totalRevenue || 0).toLocaleString('en-IN');
+  document.getElementById('s-orders').textContent  = stats.completedOrders || 0;
+  document.getElementById('s-pending').textContent = (stats.pendingOrders || 0) + ' pending';
+  document.getElementById('s-lic').textContent     = stats.activeLicenses || 0;
+  document.getElementById('s-contacts').textContent = stats.newContacts || 0;
+  const orders = await api('/orders?limit=5');
+  document.getElementById('recentOrders').innerHTML = renderOrdersTable(orders.orders || []);
+}
+
+// ── ORDERS
+let curOrderStatus = '';
+async function loadOrders() {
+  const data = await api(`/orders?page=${orderPage}&status=${orderStatus}`);
+  document.getElementById('ordersTable').innerHTML = renderOrdersTable(data.orders || []);
+  renderPag('ordersPag', data.total, orderPage, 20, (p) => { orderPage = p; loadOrders(); });
+}
+function filterOrders(status, el) {
+  document.querySelectorAll('#sec-orders .pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on'); orderStatus = status; orderPage = 1; loadOrders();
+}
+function renderOrdersTable(orders) {
+  if (!orders.length) return '<div class="empty">No orders found.</div>';
+  return `<table><thead><tr><th>Order ID</th><th>Customer</th><th>Plan</th><th>Amount</th><th>Status</th><th>License Key</th><th>Date</th></tr></thead><tbody>`
+    + orders.map(o => `<tr>
+        <td><span class="mono">${o.order_id}</span></td>
+        <td>${o.customer_name}<br><span style="color:#8098B8;font-size:.78rem;">${o.customer_email}</span></td>
+        <td>${o.plan}</td>
+        <td>₹${((o.amount||0)/100).toLocaleString('en-IN')}</td>
+        <td><span class="status s-${o.status}">${o.status}</span></td>
+        <td>${o.license_key ? `<span class="mono">${o.license_key}</span>` : '—'}</td>
+        <td>${o.created_at ? new Date(o.created_at).toLocaleDateString('en-IN') : '—'}</td>
+      </tr>`).join('') + '</tbody></table>';
+}
+
+// ── CONTACTS
+async function loadContacts() {
+  const data = await api(`/contacts?page=${contactPage}&status=${contactStatus}`);
+  document.getElementById('contactsTable').innerHTML = renderContactsTable(data.contacts || []);
+  renderPag('contactsPag', data.total, contactPage, 20, (p) => { contactPage = p; loadContacts(); });
+}
+function filterContacts(status, el) {
+  document.querySelectorAll('#sec-contacts .pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on'); contactStatus = status; contactPage = 1; loadContacts();
+}
+function renderContactsTable(contacts) {
+  if (!contacts.length) return '<div class="empty">No contacts found.</div>';
+  return `<table><thead><tr><th>Name</th><th>Email</th><th>Enquiry</th><th>Message</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>`
+    + contacts.map(c => `<tr>
+        <td>${c.name}</td>
+        <td>${c.email}<br><span style="color:#8098B8;font-size:.78rem;">${c.phone || ''}</span></td>
+        <td>${c.enquiry || '—'}</td>
+        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.message}</td>
+        <td><span class="status s-${c.status}">${c.status}</span></td>
+        <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('en-IN') : '—'}</td>
+        <td>${c.status === 'new' ? `<button class="action-btn" style="border-color:#2563EB;color:#2563EB" onclick="markRead(${c.id})">Mark Read</button>` : '—'}</td>
+      </tr>`).join('') + '</tbody></table>';
+}
+async function markRead(id) {
+  await fetch(`${API}/contacts/${id}/read`, { method: 'PATCH', headers: { 'x-admin-secret': adminSecret } });
+  loadContacts();
+}
+
+// ── LICENSES
+async function loadLicenses() {
+  const data = await api('/licenses');
+  const licenses = data.licenses || [];
+  if (!licenses.length) { document.getElementById('licensesTable').innerHTML = '<div class="empty">No licenses yet.</div>'; return; }
+  document.getElementById('licensesTable').innerHTML =
+    `<table><thead><tr><th>License Key</th><th>Customer</th><th>Plan</th><th>Accounts</th><th>Status</th><th>Issued</th><th>Action</th></tr></thead><tbody>`
+    + licenses.map(l => `<tr>
+        <td><span class="mono">${l.license_key}</span></td>
+        <td>${l.customer_email}</td>
+        <td>${l.plan}</td>
+        <td>${l.accounts_allowed}</td>
+        <td><span class="status ${l.is_active ? 's-active' : 's-revoked'}">${l.is_active ? 'Active' : 'Revoked'}</span></td>
+        <td>${l.activated_at ? new Date(l.activated_at).toLocaleDateString('en-IN') : '—'}</td>
+        <td>${l.is_active ? `<button class="action-btn" onclick="revokeLic('${l.license_key}')">Revoke</button>` : '—'}</td>
+      </tr>`).join('') + '</tbody></table>';
+}
+async function revokeLic(key) {
+  if (!confirm(`Revoke license ${key}?`)) return;
+  await fetch(`${API}/licenses/${key}/revoke`, { method: 'PATCH', headers: { 'x-admin-secret': adminSecret } });
+  loadLicenses();
+}
+
+// ── PAGINATION
+function renderPag(elId, total, page, limit, cb) {
+  const totalPages = Math.ceil(total / limit);
+  const el = document.getElementById(elId);
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <button class="pg-btn" onclick="(${cb.toString()})(${page-1})" ${page<=1?'disabled':''}>← Prev</button>
+    <span>Page ${page} of ${totalPages} &nbsp;(${total} total)</span>
+    <button class="pg-btn" onclick="(${cb.toString()})(${page+1})" ${page>=totalPages?'disabled':''}>Next →</button>`;
+}
+</script>
+</body>
+</html>
